@@ -21,8 +21,18 @@ ctk.set_default_color_theme("dark-blue")
 
 APP_NAME = "ORCA DECK"
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ASSETS_DIR = os.path.join(os.path.dirname(BASE_DIR), "assets")
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        # In dev, we are in PC client/, assets are in ../assets
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    return os.path.join(base_path, relative_path)
+
+ASSETS_DIR = resource_path("assets")
 
 PASSWORDS_FILE = os.path.join(ASSETS_DIR, "passwords.json")
 CONFIG_FILE = os.path.join(ASSETS_DIR, "config.json")

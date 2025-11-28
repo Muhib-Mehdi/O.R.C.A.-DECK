@@ -49,16 +49,13 @@ Communication between the two is handled via reliable serial protocols.
    ```bash
    git clone https://github.com/Muhib-Mehdi/orca-deck.git
    ```
-2. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Upload the Arduino firmware to your board.
-4. Configure the COM port in `assets/config.json`.
-5. Run the application:
-   ```bash
-   python PC_client/orca_deck_app.py
-   ```
+2. Upload the Arduino firmware to your board.
+3. Configure the COM port in `assets/config.json`.
+4. Run the application using the executable:
+   - Navigate to the `dist` folder.
+   - Double-click `ORCA DECK.exe`.
+
+   *Note: No Python installation is required to run the executable.*
 
 ### Initial Setup
 On first launch, you’ll set up security questions – the only fallback if you ever lose your RFID card.
