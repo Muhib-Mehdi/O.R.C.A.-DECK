@@ -1,0 +1,7 @@
+customtkinter
+pyserial
+pyautogui
+pycryptodome
+pystray
+pillow
+pyperclip

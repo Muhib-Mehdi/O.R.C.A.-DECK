@@ -1,0 +1,38 @@
+{
+  "passwords": {
+    "A": "Steam",
+    "B": "Discord",
+    "C": "Valorant",
+    "D": "YouTube",
+    "3": "GitHub",
+    "6": "Infinite",
+    "9": "Muhib24",
+    "#": "Brave",
+    "2": "Instagram",
+    "5": "LinkedIn",
+    "8": "Other",
+    "0": "ABC",
+    "1": "Aarav",
+    "4": "Item 14",
+    "7": "Item 15",
+    "*": "Back"
+  },
+  "apps": {
+    "A": "Steam",
+    "B": "Settings",
+    "C": "WhatsApp",
+    "D": "Instagram",
+    "3": "Discord",
+    "6": "Valorant",
+    "9": "Files",
+    "#": "VS Code",
+    "2": "YouTube",
+    "5": "Clock",
+    "8": "Terminal",
+    "0": "OBS",
+    "1": "Brave",
+    "4": "GitHub",
+    "7": "Calc",
+    "*": "Back"
+  }
+}
