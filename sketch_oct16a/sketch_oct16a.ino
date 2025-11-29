@@ -173,7 +173,24 @@ void setup() {
   tft.setRotation(1);
   tft.fillScreen(COL_BG);
 
+  // Initialize NFC with error checking
+  tft.fillRect(0, 0, tft.width(), 50, COL_PANEL);
+  drawCenteredTextGuarded("Initializing NFC...", tft.width()/2, 20, 1, COL_TEXT, tft.width()-20);
+  
   nfc.begin();
+  uint32_t versiondata = nfc.getFirmwareVersion();
+  if (!versiondata) {
+    Serial.println("ERROR: NFC module not found!");
+    drawCenteredTextGuarded("NFC Error!", tft.width()/2, 60, 2, ILI9341_RED, tft.width()-20);
+    drawCenteredTextGuarded("Check connections", tft.width()/2, 90, 1, COL_MUTED, tft.width()-20);
+    delay(3000);
+  } else {
+    Serial.print("Found PN53x chip, version: ");
+    Serial.println((versiondata >> 24) & 0xFF, HEX);
+    drawCenteredTextGuarded("NFC Ready!", tft.width()/2, 60, 2, COL_ACCENT3, tft.width()-20);
+    delay(1000);
+  }
+  
   nfc.SAMConfig();
 
   drawMainMenu();
@@ -599,7 +616,7 @@ void checkRFID() {
     }
   }
 
-  if (!isVerifying && (millis() - lastRFIDRead > 2000)) {
+  if (!isVerifying && (millis() - lastRFIDRead > 500)) {
     if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 50)) { 
       lastRFIDRead = millis();
       verificationStartTime = millis();

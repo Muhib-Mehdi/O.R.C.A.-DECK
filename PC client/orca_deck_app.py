@@ -67,6 +67,7 @@ class OrcaDeckApp(ctk.CTk):
         self.protocol('WM_DELETE_WINDOW', self.hide_window)
 
         self.is_locked = True
+        self.in_rfid_setup = False
         self.encryption_manager = EncryptionManager()
         self.security_manager = SecurityManager(ASSETS_DIR)
         
@@ -215,6 +216,25 @@ class OrcaDeckApp(ctk.CTk):
              except:
                  pass
         
+        self.show_rfid_setup()
+
+    def show_rfid_setup(self):
+        self.clear_main_frame()
+        
+        container = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        container.place(relx=0.5, rely=0.5, anchor="center")
+
+        ctk.CTkLabel(container, text="🔐 Register Master Card", font=self.font_header).pack(pady=10)
+        ctk.CTkLabel(container, text="Step 2 of 2", font=self.font_sub, text_color="gray").pack(pady=(0, 30))
+        
+        ctk.CTkLabel(container, text="Please scan your RFID card now.\nThis will be your master unlock card.", font=self.font_norm, justify="center").pack(pady=20)
+        
+        self.rfid_status_label = ctk.CTkLabel(container, text="⏳ Waiting for card scan...", font=ctk.CTkFont(size=14, weight="bold"), text_color="#3498db")
+        self.rfid_status_label.pack(pady=20)
+        
+        self.in_rfid_setup = True
+
+    def complete_setup(self):
         self.is_locked = False
         self.show_dashboard()
 
@@ -404,6 +424,21 @@ class OrcaDeckApp(ctk.CTk):
             try:
                 uid = message.split(":")[1].strip().upper()
                 print(f"DEBUG: Scanned UID: '{uid}'")
+                
+                # Handle RFID setup mode
+                if self.in_rfid_setup:
+                    print(f"DEBUG: RFID Setup - Registering UID: {uid}")
+                    self.authorized_uids.append(uid)
+                    self.save_json(UIDS_FILE, self.authorized_uids)
+                    
+                    if hasattr(self, 'rfid_status_label'):
+                        self.rfid_status_label.configure(text="✅ Card registered successfully!", text_color="#2ecc71")
+                    
+                    self.in_rfid_setup = False
+                    self.after(1500, self.complete_setup)
+                    return
+                
+                # Normal RFID unlock flow
                 print(f"DEBUG: Authorized UIDs: {self.authorized_uids}")
                 
                 if uid in self.authorized_uids:
