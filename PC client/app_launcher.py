@@ -93,8 +93,8 @@ class AppLauncher(ctk.CTkFrame):
             if file_path:
                 raw_data = ImageProcessor.convert_to_rgb565(file_path)
                 if raw_data:
-                    if self.serial_handler.send_icon_data(key, raw_data):
-                        print(f"Icon sent for key {key}")
+                    if self.serial_handler.send_icon_data(key, raw_data, icon_type="app"):
+                        print(f"App icon sent for key {key}")
                     else:
                         print("Failed to send icon")
                 else:

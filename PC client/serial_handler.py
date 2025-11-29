@@ -60,14 +60,18 @@ class SerialHandler:
             except Exception as e:
                 print(f"Send Error: {e}")
 
-    def send_icon_data(self, key, data):
+    def send_icon_data(self, key, data, icon_type="app"):
+        """
+        Send icon data to Arduino
+        icon_type: "app" or "pass" to differentiate between app and password icons
+        """
         if not self.serial_conn or not self.serial_conn.is_open:
             return False
             
         total_size = len(data)
-        print(f"Sending icon for key {key}, size: {total_size} bytes")
+        print(f"Sending {icon_type} icon for key {key}, size: {total_size} bytes")
         
-        self.send(f"ICON_START:{key}:{total_size}")
+        self.send(f"ICON_START:{icon_type}:{key}:{total_size}")
         time.sleep(0.5)
         
         chunk_size = 32

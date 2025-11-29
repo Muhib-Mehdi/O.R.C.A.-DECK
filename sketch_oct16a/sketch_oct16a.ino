@@ -218,11 +218,13 @@ void handleSerialIconUpload() {
     if (line.startsWith("ICON_START:")) {
       int firstColon = line.indexOf(':');
       int secondColon = line.indexOf(':', firstColon + 1);
+      int thirdColon = line.indexOf(':', secondColon + 1);
       
-      uploadKey = line.substring(firstColon + 1, secondColon);
-      uploadRemaining = line.substring(secondColon + 1).toInt();
+      String iconType = line.substring(firstColon + 1, secondColon);
+      uploadKey = line.substring(secondColon + 1, thirdColon);
+      uploadRemaining = line.substring(thirdColon + 1).toInt();
       
-      String filename = "/icon_" + uploadKey + ".raw";
+      String filename = "/" + iconType + "_" + uploadKey + ".raw";
       Serial.print("Opening for write: "); Serial.println(filename);
       
       if (SPIFFS.exists(filename)) SPIFFS.remove(filename);
@@ -372,7 +374,7 @@ void drawSteamdeckGrid() {
       
       
       String keyStr = String(keyMap[r][c]);
-      String filename = "/icon_" + keyStr + ".raw";
+      String filename = "/app_" + keyStr + ".raw";
       
       if (SPIFFS.exists(filename)) {
         drawBitmapFromSPIFFS(x, y, filename.c_str());
@@ -411,7 +413,7 @@ void drawPasswordManagerGrid() {
       
       
       String keyStr = String(keyMap[r][c]);
-      String filename = "/icon_" + keyStr + ".raw";
+      String filename = "/pass_" + keyStr + ".raw";
       
       if (SPIFFS.exists(filename)) {
         drawBitmapFromSPIFFS(x, y, filename.c_str());
@@ -444,7 +446,7 @@ void flashIconGrid4x4(int r, int c) {
     {'1','4','7','*'}
   };
   String keyStr = String(keyMap[r][c]);
-  String filename = "/icon_" + keyStr + ".raw";
+  String filename = "/app_" + keyStr + ".raw";
   
   if (SPIFFS.exists(filename)) {
     drawBitmapFromSPIFFS(x, y, filename.c_str());
@@ -475,7 +477,7 @@ void flashIconPassGrid(int r, int c) {
     {'1','4','7','*'}
   };
   String keyStr = String(keyMap[r][c]);
-  String filename = "/icon_" + keyStr + ".raw";
+  String filename = "/pass_" + keyStr + ".raw";
   
   if (SPIFFS.exists(filename)) {
     drawBitmapFromSPIFFS(x, y, filename.c_str());

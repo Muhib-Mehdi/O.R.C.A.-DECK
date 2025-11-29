@@ -32,7 +32,20 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
-ASSETS_DIR = resource_path("assets")
+# Define persistent assets directory
+if getattr(sys, 'frozen', False):
+    # If running as compiled exe, store data in 'assets' folder next to the executable
+    ASSETS_DIR = os.path.join(os.path.dirname(sys.executable), "assets")
+else:
+    # If running from source, use the project's assets folder
+    ASSETS_DIR = resource_path("assets")
+
+# Ensure the directory exists
+if not os.path.exists(ASSETS_DIR):
+    try:
+        os.makedirs(ASSETS_DIR)
+    except Exception as e:
+        print(f"Error creating assets directory: {e}")
 
 PASSWORDS_FILE = os.path.join(ASSETS_DIR, "passwords.json")
 CONFIG_FILE = os.path.join(ASSETS_DIR, "config.json")
@@ -64,14 +77,33 @@ class OrcaDeckApp(ctk.CTk):
         self.geometry("1000x700") 
         self.resizable(True, True)
         
-        self.protocol('WM_DELETE_WINDOW', self.hide_window)
+        self.protocol('WM_DELETE_WINDOW', self.quit_app)
 
         self.is_locked = True
         self.in_rfid_setup = False
         self.encryption_manager = EncryptionManager()
         self.security_manager = SecurityManager(ASSETS_DIR)
         
+        # Load encryption key
+        if os.path.exists(KEY_FILE):
+            self.encryption_manager.load_key_from_file(KEY_FILE)
+        
+        # Load and decrypt passwords
         self.passwords = {}
+        encrypted_passwords = self.load_json(PASSWORDS_FILE)
+        if encrypted_passwords:
+            try:
+                # If it's a dictionary with ciphertext, try to decrypt
+                if "ciphertext" in encrypted_passwords:
+                    decrypted = self.encryption_manager.decrypt_data(encrypted_passwords)
+                    if decrypted:
+                        self.passwords = decrypted
+                else:
+                    # Fallback for legacy plain text (if any)
+                    self.passwords = encrypted_passwords
+            except Exception as e:
+                print(f"Error loading passwords: {e}")
+
         self.apps_config = self.load_json(APPS_FILE)
         self.config = self.load_json(CONFIG_FILE, {"com_port": "COM3", "auto_lock_minutes": 15})
         self.authorized_uids = self.load_json(UIDS_FILE, [])
@@ -210,7 +242,11 @@ class OrcaDeckApp(ctk.CTk):
         if any(not a for a in answers):
             return
             
+        # Save security answers
         self.security_manager.set_answers(answers)
+        
+        # IMPORTANT: Reload the security manager data to ensure is_setup() returns True
+        self.security_manager.data = self.security_manager.load_data()
         
         self.encryption_manager.generate_key()
         self.encryption_manager.save_key_to_file(KEY_FILE)
@@ -471,13 +507,32 @@ class OrcaDeckApp(ctk.CTk):
                 self.type_password(key)
 
     def launch_app(self, key):
-        app_name = self.mappings["apps"].get(key, "Unknown App")
-        print(f"Launching {app_name} (Key {key})")
+        app_path = self.apps_config.get(key)
+        if not app_path:
+            print(f"No app found for key {key}")
+            return
+            
+        print(f"Launching: {app_path}")
         
-        launcher = AppLauncher(self.main_frame, self.apps_config, self.mappings["apps"], None)
-        app_path = self.apps_config.get(key, "")
-        if app_path:
-            launcher.launch_app(app_path)
+        if os.path.exists(app_path):
+            try:
+                os.startfile(app_path)
+                return
+            except:
+                pass
+                
+        if app_path.startswith("http"):
+            import webbrowser
+            webbrowser.open(app_path)
+            return
+            
+        # Fallback to typing the name (e.g. for Windows search)
+        pyautogui.press('win')
+        time.sleep(0.1)
+        pyautogui.write(app_path)
+        time.sleep(0.5)
+        pyautogui.press('enter')
+
 
     def type_password(self, key):
         
@@ -521,9 +576,18 @@ class OrcaDeckApp(ctk.CTk):
         self.withdraw()
 
     def quit_app(self):
-        self.serial_handler.stop()
-        self.tray_icon.stop()
+        try:
+            self.serial_handler.stop()
+        except:
+            pass
+        
+        try:
+            self.tray_icon.stop()
+        except:
+            pass
+        
         self.quit()
+        self.destroy()
 
     def run(self):
         self.mainloop()
