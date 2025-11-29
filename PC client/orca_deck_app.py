@@ -96,9 +96,17 @@ class OrcaDeckApp(ctk.CTk):
         self.create_sidebar()
         self.create_main_area()
         
-        if not self.security_manager.is_setup():
+        # Debug: Check security setup status
+        setup_status = self.security_manager.is_setup()
+        print(f"DEBUG: Security setup status: {setup_status}")
+        print(f"DEBUG: Security data file: {self.security_manager.file_path}")
+        print(f"DEBUG: Security data content: {self.security_manager.data}")
+        
+        if not setup_status:
+            print("DEBUG: Showing security setup screen")
             self.show_security_setup()
         else:
+            print("DEBUG: Showing lock screen")
             self.show_lock_screen()
         
         self.setup_tray()
@@ -181,6 +189,7 @@ class OrcaDeckApp(ctk.CTk):
         container.place(relx=0.5, rely=0.5, anchor="center")
 
         ctk.CTkLabel(container, text="Welcome to ORCA DECK", font=self.font_header).pack(pady=10)
+        ctk.CTkLabel(container, text="Step 1 of 2", font=self.font_sub, text_color="gray").pack(pady=(0, 10))
         ctk.CTkLabel(container, text="Let's secure your vault.", font=self.font_sub, text_color="gray").pack(pady=(0, 30))
         
         ctk.CTkLabel(container, text="Please answer these 3 security questions.\nThey are your ONLY way back if you lose your RFID card.", font=self.font_norm).pack(pady=10)
